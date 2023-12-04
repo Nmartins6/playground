@@ -1,18 +1,22 @@
 import cv2
 
-# Carregando a imagem
-image = cv2.imread('Foto_2023-12-01_141717.jpg')
+img = cv2.imread('Foto_2023-12-01_141717.jpg')
+original = img.copy()
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+blurred = cv2.GaussianBlur(gray, (3, 3), 0)
+thresh = cv2.threshold(blurred, 230, 255, cv2.THRESH_BINARY_INV)[1]
 
-# Definindo as coordenadas do recorte (x, y, largura, altura)
-x, y, width, height = 100, 80, 300, 250
+contours = cv2. findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+contours = contours[0] if len(contours) == 2 else contours [1]
 
-# Recortando a região da imagem
-cropped_image = image[y:y+height, x:x+width]
+img_number = 0
+for c in contours:
+    x,y,w,h = cv2.boundingRect(c)
+    cv2.rectangle(img, (x, y), (x + w, y + h), (36,255,12), 2)
+    ROI = original[y:y+h, x: x+w]
+    cv2.imwrite("ROI_{}.jpg". format(img_number), ROI)
+    img_number += 1
 
-cv2.rectangle(image, (x, y), (x + width, y + height), (0, 255, 0), 2)
-
-# Mostrando a imagem original e a imagem recortada
-cv2.imshow('Imagem Original', image)
-cv2.imshow('Imagem Recortada', cropped_image)
+cv2.imshow('thresh', thresh)
+cv2.imshow('image', img)
 cv2.waitKey(0)
-cv2.destroyAllWindows()
